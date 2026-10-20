@@ -29,12 +29,10 @@ class FramePlayer{
 const frames=window.JOURNEY_FRAMES||{};
 const crane=new FramePlayer($('#crane-canvas'),[...(frames.lift||[]),...(frames.rotate||[]),...(frames.place||[])]);
 const truck=new FramePlayer($('#truck-turn'),frames.truck);
-// Rotating globe rendered from the public world-map image.
-const globe=$('#globe'),ctx=globe?.getContext('2d');let points=[],globeWidth=0,globeHeight=0;
-function resizeGlobe(){if(!globe)return;const r=globe.getBoundingClientRect();const d=Math.min(devicePixelRatio,1.5);globe.width=r.width*d;globe.height=r.height*d;globeWidth=globe.width;globeHeight=globe.height}
-if(globe){resizeGlobe();const map=new Image;map.onload=()=>{const mask=document.createElement('canvas');mask.width=720;mask.height=360;const m=mask.getContext('2d',{willReadFrequently:true});m.drawImage(map,0,0,720,360);const data=m.getImageData(0,0,720,360).data;for(let lat=-80;lat<80;lat+=2.4){for(let lon=-180;lon<180;lon+=2.4/Math.max(.3,Math.cos(lat*Math.PI/180))){const x=Math.floor((lon+180)*2),y=Math.floor((90-lat)*2),i=(y*720+x)*4;const land=data[i+3]>25&&data[i]<180;points.push({lat:lat*Math.PI/180,lon:lon*Math.PI/180,land})}}};map.src='/assets/3230ce07e3a422afe0.png'}
-function drawGlobe(t,scroll){if(!ctx||!globeWidth)return;const w=globeWidth,h=globeHeight,r=Math.min(w,h)*.36,cx=w*.5,cy=h*.5,angle=(reduced?.7:t*.000035)+scroll*1.3;ctx.clearRect(0,0,w,h);const glow=ctx.createRadialGradient(cx-r*.25,cy-r*.4,0,cx,cy,r);glow.addColorStop(0,'#071437');glow.addColorStop(.6,'#030916');glow.addColorStop(.98,'#000207');glow.addColorStop(1,'#183ca0');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();for(const p of points){const lon=p.lon+angle;let x=Math.cos(p.lat)*Math.sin(lon),z=Math.cos(p.lat)*Math.cos(lon),y=Math.sin(p.lat);const ry=y*.94+z*.342,rz=z*.94-y*.342;if(rz<0)continue;ctx.fillStyle=p.land?`rgba(130,169,255,${.22+rz*.65})`:`rgba(61,98,177,${.05+rz*.13})`;const dot=(p.land?1.1:.65)*(w/850);ctx.beginPath();ctx.arc(cx+x*r,cy-ry*r,dot,0,6.284);ctx.fill()}
-ctx.save();ctx.beginPath();ctx.arc(cx,cy,r*.995,0,Math.PI*2);ctx.clip();for(let i=0;i<4;i++){const y=cy+(i-1.5)*r*.25;ctx.strokeStyle=i===1?'#ff7b3560':'#5e90ed45';ctx.lineWidth=Math.max(.5,w/1200);ctx.beginPath();ctx.ellipse(cx,y,r*.86,r*(.18+i*.05),-.3+i*.19,Math.PI*.98,Math.PI*2.1);ctx.stroke();const a=(t*.00013+i*1.7)%Math.PI+Math.PI;ctx.fillStyle=i===1?'#ffa16c':'#a9c8ff';ctx.beginPath();ctx.arc(cx+Math.cos(a)*r*.86,y+Math.sin(a)*r*(.18+i*.05),2.5*w/850,0,6.284);ctx.fill()}ctx.restore()}
+// Geographic globe shares the hero's visibility-aware animation loop.
+const globeController = document.querySelector('#globe') ? new window.UnitedGlobe(document.querySelector('#globe'), reduced) : null;
+const resizeGlobe = () => globeController?.resize();
+const drawGlobe = (t, progress) => globeController?.draw(t, progress);
 const hero=$('.home-hero-wrap'),heroText=$('.home-hero-text-wrap'),heroGlobe=$('.home-hero-globe');
 const craneSection=$('.crane-sequence'),road=$('.road-sequence'),horizontal=$('.services-horizontal'),drive=$('.driving-truck'),turn=$('#truck-turn');
 const sea=$('.ocean-sequence'),seaReasons=$('.ocean-reasons'),ship=$('.freight-ship'),flight=$('.flight-sequence');
