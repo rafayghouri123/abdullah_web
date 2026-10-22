@@ -26,4 +26,17 @@ html,body,*{overflow-anchor:none}.header{position:fixed!important;top:0!importan
 .globe-sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(max-width:767px){.country-label{font-size:9px;padding:4px 5px}.globe-controls{bottom:20px;right:20px}.globe-controls button{width:36px;height:36px}.home-hero-canvas{touch-action:pan-y}}
 .home-hero-stick{overflow:clip}
+.freight-journey{height:1600svh;position:relative;background:white}
+.freight-pin{position:sticky;top:0;height:100svh;overflow:clip;background:white}
+#freight-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.freight-word{position:absolute;left:0;z-index:3;font:18vw/1 'BT Steinhart';white-space:nowrap;color:#1111110b;pointer-events:none}
+.freight-services.road-main{position:absolute;left:0;right:0;bottom:0;height:auto;padding:7vh 0 3vh;z-index:4;visibility:hidden}
+.freight-reliability{position:absolute;top:0;left:43%;width:57%;z-index:4;visibility:hidden;background:white}
+.freight-reliability .reliability-copy{width:100%;padding:10vh 5vw 4vh}
+.freight-reliability .reliability-copy>.heading{font-size:5.5vw;margin-bottom:10vh}
+.freight-reliability .reliability-features{padding-left:5vw}
+.freight-speed{position:absolute;left:4vw;top:100px;z-index:5;font:11px 'BT Steinhart Mono';color:#777}
+.freight-hint{position:absolute;bottom:3vh;left:4vw;z-index:5;color:white;font:11px 'BT Steinhart Mono'}
+@media(max-width:767px){.freight-journey{height:1600svh}.freight-services.road-main{padding-top:5vh}.freight-reliability .reliability-copy{padding:8vh 5vw 4vh}.freight-reliability .reliability-copy>.heading{font-size:7vw}.freight-reliability .reliability-features{padding:0}.freight-reliability .home-service-sub-title{font-size:5.5vw}.freight-reliability .home-service-sub-desc{font-size:12px}.freight-speed{top:80px}}
+@media(prefers-reduced-motion:reduce){.freight-journey{height:auto}.freight-pin{height:auto;position:relative;overflow:visible}.freight-pin #freight-canvas,.freight-word,.freight-speed,.freight-hint{display:none}.freight-services.road-main,.freight-reliability{position:relative;inset:auto!important;width:100%;height:auto;visibility:visible!important;opacity:1!important;transform:none!important}.freight-services .services-horizontal{width:100%}.freight-services .service-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));padding:0 4vw}.freight-services .service-cards .home-service-item{width:auto;min-width:0}.freight-reliability .reliability-copy{padding:10vh 5vw}.freight-reliability .reliability-copy>.heading{font-size:clamp(32px,5vw,80px)}}
 @media(max-width:767px){.home-hero-globe{width:122vw;height:122vw;right:-18vw;top:5svh}.globe-controls{top:49svh;bottom:auto}.country-label{font-size:9px}}

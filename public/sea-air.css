@@ -1,0 +1,49 @@
+.home-hero-wrap{height:100svh}
+.home-intro{padding-top:8vh}
+.freight-journey{height:980svh}
+.ocean-sequence.sea-air-journey{height:500svh;margin-top:-100svh;background:#06273e;position:relative;z-index:4}
+.sea-air-pin{position:sticky;top:0;height:100svh;overflow:clip;background:#e9eaf0;isolation:isolate}
+.sea-layer,.sky-layer{position:absolute;inset:0;pointer-events:none}
+.sea-layer{z-index:1;overflow:hidden;background:#06273e}
+.sea-air-pin .ocean-texture{position:absolute;inset:-12%;width:124%;height:124%;max-width:none;object-fit:cover;filter:none;animation:water-drift 18s ease-in-out infinite alternate}
+.ocean-surface{position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none}
+.sea-air-pin .freight-ship{position:absolute;left:0;top:0;max-width:none;object-fit:contain;transform-origin:center;filter:drop-shadow(6px 8px 6px #00162870);will-change:transform}
+.sea-air-pin .ocean-heading{z-index:3;left:5%;top:14%;width:50%;color:white;text-shadow:0 2px 15px #00182580}
+.sea-air-pin .ocean-heading .heading{font-size:clamp(36px,5.6vw,86px)}
+.sea-air-pin .ocean-reasons{position:absolute;z-index:3;left:16%;top:24%;width:68%;display:grid;grid-template-columns:1fr 1fr;column-gap:22%;row-gap:3.5vh;opacity:0;will-change:opacity,transform}
+.sea-air-pin .ocean-reasons .home-why-main-item{width:auto;max-width:none;text-shadow:0 2px 12px #00142690}
+.sea-air-pin .home-why-main-item:nth-child(odd) .home-why-main-item-inner{align-items:flex-end;text-align:right}
+.sea-air-pin .home-why-main-item:nth-child(even) .home-why-main-item-inner{align-items:flex-start;text-align:left}
+.sea-air-pin .home-why-main-item:last-child{grid-column:1/-1;width:45%;justify-self:center}
+.sea-air-pin .home-why-main-item:last-child .home-why-main-item-inner{align-items:center;text-align:center}
+.sea-air-pin .ocean-reasons .home-why-main-item-title{font-size:clamp(17px,1.8vw,28px);margin:12px 0}
+.sea-air-pin .ocean-reasons .home-why-main-item-desc{font-size:clamp(12px,1vw,16px);line-height:1.4}
+.sea-air-pin .home-why-main-item-title .heading,.sea-air-pin .home-why-main-item-desc .txt{font-size:inherit;line-height:inherit}
+.sea-air-pin .home-why-main-item-inner{gap:0}
+.sea-air-pin .home-why-main-item-ic{width:34px;height:34px}
+.sky-layer{z-index:4;opacity:0;background:radial-gradient(ellipse at 50% 25%,#b5bed8,#e4e7ed 70%,#fff)}
+.journey-cloud{position:absolute;z-index:5;left:0;top:0;max-width:none;height:auto;opacity:0;pointer-events:none;transform-origin:50% 50%;will-change:transform,opacity}
+.journey-cloud.foreground-cloud{z-index:7;filter:blur(1px)}
+.sea-air-pin .airplane{position:absolute;z-index:6;left:0;top:0;max-width:none;object-fit:contain;opacity:0;will-change:transform;filter:drop-shadow(-35px 55px 22px #273e624d)}
+.home-testi-wrap{background:#fff}
+@keyframes water-drift{from{transform:translate3d(-1%,-2%,0) scale(1.02)}to{transform:translate3d(1%,2%,0) scale(1.06)}}
+@media(max-width:767px){
+ .ocean-sequence.sea-air-journey{height:480svh}
+ .sea-air-pin .ocean-heading{width:86%;top:15%;left:7%}
+ .sea-air-pin .ocean-heading .heading{font-size:clamp(32px,8vw,54px)}
+ .sea-air-pin .ocean-reasons{left:4%;width:92%;top:22%;column-gap:22%;row-gap:3vh}
+ .sea-air-pin .ocean-reasons .home-why-main-item-title{font-size:clamp(14px,3.6vw,23px);margin:8px 0}
+ .sea-air-pin .ocean-reasons .home-why-main-item-desc{font-size:clamp(10px,2.55vw,14px)}
+ .sea-air-pin .home-why-main-item-ic{width:25px;height:25px}
+ .sea-air-pin .home-why-main-item:last-child{width:70%}
+}
+@media(prefers-reduced-motion:reduce){
+ .freight-journey{height:auto}
+ .ocean-sequence.sea-air-journey{height:auto;margin-top:0}
+ .sea-air-pin{height:auto;position:relative;padding:10vh 5vw;min-height:100vh;background:#052944}
+ .sea-air-pin .ocean-texture{animation:none}
+ .sea-air-pin .freight-ship,.sky-layer,.journey-cloud,.sea-air-pin .airplane{display:none}
+ .sea-air-pin .ocean-heading{position:relative;inset:auto;width:100%;margin-bottom:8vh}
+ .sea-air-pin .ocean-reasons{position:relative;inset:auto;width:100%;opacity:1;display:grid;gap:5vh 7vw}
+ .sea-air-pin .home-why-main-item:nth-child(n) .home-why-main-item-inner{align-items:flex-start;text-align:left}
+}

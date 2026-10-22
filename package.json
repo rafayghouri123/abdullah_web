@@ -1,1 +1,18 @@
-{"name":"united-carriers-recreation","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node server.mjs","check":"node --check dist/recreation.js"}}
+{
+  "name": "united-carriers-next",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "check": "node --check public/recreation.js && node --check public/freight.js && node --check public/globe.js && node --check public/sea-air.js",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}
