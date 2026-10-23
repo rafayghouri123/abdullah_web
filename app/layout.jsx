@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
         <Script id="united-carriers-animations" strategy="afterInteractive">
           {`if (!window.__unitedCarriersAnimationsLoaded) {
             window.__unitedCarriersAnimationsLoaded = true;
-            for (const path of ['/frames.js', '/globe.js', '/freight-assets.js', '/freight.js', '/sea-air.js', '/recreation.js']) {
+            for (const path of ['/frames.js', '/globe.js', '/freight-assets.js', '/freight.js', '/sea-air.js', '/crane-scroll.js', '/recreation.js']) {
               const script = document.createElement('script');
               script.src = path;
               script.async = false;

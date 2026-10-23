@@ -25,3 +25,7 @@ The page uses the App Router and React server rendering. The scene markup remain
 ## Scope
 
 Reference: [unitedcarriers.com](https://unitedcarriers.com/). This is a visual homepage recreation, not the company's operational site. Search indexing is disabled. Original company identity, copy, fonts, and artwork retain their respective ownership. The scroll playback and interactive globe are independent implementations; some timing and transitions are approximations. Reduced-motion preferences are supported.
+
+Crane playback advances at a bounded pace and waits for both adjacent frames to decode before blending. Fast forward gestures temporarily hold the scene through pickup, placement, and spreader release; scrolling resumes at the matching timeline position. Reverse input or Escape cancels the hold, and reduced motion bypasses it. Wheel, touch, keyboard, and scrollbar jumps are handled by public/crane-scroll.js. A 20-second fail-safe releases scrolling if assets cannot load.
+
+Pacing update: crane loading/release uses 10% of the freight scroll track (previously 24.3%). The reliability copy finishes its full vertical travel by phase .965, remains fully opaque for a reading hold, and only then fades into docking. Crane frames use eased phase movement, blending, and directional lookahead of 18 full-resolution frames. The globe renders on each animation frame, interpolates route-marker positions, and smooths its scroll response and country labels.

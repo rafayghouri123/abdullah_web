@@ -17,13 +17,18 @@
       this.target = Math.round(this.position);
       const direction = this.target >= previous ? 1 : -1;
       const wanted = [this.target, Math.floor(this.position), Math.ceil(this.position)];
-      for (let n = 1; n <= 6; n++) wanted.push(this.target + n * direction, this.target - n * direction);
+      const ahead = this.options.lookAhead || 6, behind = this.options.lookBehind || 6;
+      for (let n = 1; n <= Math.max(ahead, behind); n++) {
+        if(n<=ahead)wanted.push(this.target+n*direction);
+        if(n<=behind)wanted.push(this.target-n*direction);
+      }
       // Keep both handoff frames available, including when scrolling backward.
       wanted.push(0, this.urls.length - 1);
       if(this.warmed)for(let n=0;n<this.urls.length;n++)wanted.push(n);
       this.queue = wanted.filter(n => n >= 0 && n < this.urls.length && !this.cache.has(n)); this.load();
-      if (!this.options.retainAll && this.cache.size > 22) for (const [n, entry] of this.cache) {
-        if (n !== 0 && n !== this.urls.length - 1 && entry.ready && Math.abs(n - this.target) > 7) this.cache.delete(n);
+      if (!this.options.retainAll && this.cache.size > ahead + behind + 8) for (const [n, entry] of this.cache) {
+        const offset=(n-this.target)*direction;
+        if (n !== 0 && n !== this.urls.length - 1 && entry.ready && (offset>ahead+1 || offset < -behind-1)) this.cache.delete(n);
       }
     }
     warm(){if(this.warmed)return;this.warmed=true;this.seek(this.position/(this.urls.length-1));}
@@ -53,6 +58,29 @@
       return nearest ? (closest || this.lastImage) : (this.lastImage || closest);
     }
     ready() { return !!this.cache.get(this.target)?.ready; }
+    blendReady() { return [Math.floor(this.position), Math.ceil(this.position)].every(n => this.cache.get(n)?.ready); }
+    blendedImage() {
+      const lower=this.cache.get(Math.floor(this.position)),upper=this.cache.get(Math.ceil(this.position));
+      const fraction=this.position%1;
+      if(!lower?.ready || !upper?.ready)return this.image(true);
+      if(fraction<.0001)return lower.image;
+      if(!this.blendCanvas){
+        if(typeof document==='undefined')return this.image(true);
+        this.blendCanvas=document.createElement('canvas');
+      }
+      const canvas=this.blendCanvas,w=lower.image.naturalWidth||lower.image.width,h=lower.image.naturalHeight||lower.image.height;
+      if(canvas.width!==w || canvas.height!==h){canvas.width=w;canvas.height=h;}
+      const ctx=canvas.getContext('2d');
+      ctx.clearRect(0,0,w,h);
+      // Weighted premultiplied-alpha addition keeps transparent truck edges
+      // from darkening or flashing as we interpolate adjacent source poses.
+      ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1-fraction;
+      ctx.drawImage(lower.image,0,0,w,h);
+      ctx.globalCompositeOperation='lighter';ctx.globalAlpha=fraction;
+      ctx.drawImage(upper.image,0,0,w,h);
+      ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+      return canvas;
+    }
     draw(ctx, ...bounds) {
       const lower = this.cache.get(Math.floor(this.position)), upper = this.cache.get(Math.ceil(this.position));
       const image = this.image();
@@ -68,9 +96,9 @@
     // Spend less scroll on setup/lifting pauses, while retaining reading time
     // for the services and reliability panels. All artwork frames stay available.
     static timelineProgress(scrollProgress) {
-      const stops = [[0,0],[.005,.04],[.035,.19],[.085,.31],[.13,.38],
-        [.22,.46],[.243,.50],[.324,.57],[.693,.80],[.785,.87],
-        [.843,.91],[.90,.94],[.958,.965],[1,1]];
+      const stops = [[0,0],[.003,.04],[.015,.19],[.035,.31],[.055,.38],
+        [.09,.46],[.10,.50],[.17,.57],[.52,.80],[.59,.87],
+        [.64,.91],[.70,.94],[.90,.965],[.92,.965],[1,1]];
       const scroll = clamp(scrollProgress);
       for (let i=1;i<stops.length;i++) {
         const [end,phase]=stops[i], [start,previous]=stops[i-1];
@@ -89,7 +117,7 @@
         image.src = src; this.parts[key] = image;
       }
       const frames = window.JOURNEY_FRAMES;
-      this.crane = new Sequence([...frames.lift, ...frames.rotate, ...frames.place], () => { this.dirty = true; });
+      this.crane = new Sequence([...frames.lift, ...frames.rotate, ...frames.place], () => { this.dirty = true; }, {lookAhead:18,lookBehind:3,concurrency:6});
       this.turn = new Sequence(frames.truck, () => { this.dirty = true; }, {maxWidth:1024,retainAll:true,concurrency:2});
       this.resize();
       if(typeof ResizeObserver==='function'){
@@ -127,20 +155,23 @@
     update(scrollProgress, speed) {
       if (this.reduced) { this.panel.inert = false; this.copy.inert = false; return; }
       const now = performance.now(), dt = Math.min(64, now - this.tick); this.tick = now;
-      const target = clamp(scrollProgress), previous = this.playhead ?? target;
+      const target = clamp(scrollProgress), previous = this.playhead ?? (target <= .50 ? 0 : target);
       const delta = target - previous;
       // The sea is already entering at the end of the track; its matching cargo
       // anchor must be exact even after a fast wheel or touch gesture.
-      const p = target === 1 || Math.abs(delta) < .000015 ? target : previous + delta * (1 - Math.exp(-dt / 32));
-      // Loading an intermediate frame must not hold back the scroll playhead.
-      this.playhead = p;
+      const response=previous>=.50 && previous<.965 ? 55 : 32;
+      let p = target === 1 || Math.abs(delta) < .000015 ? target : previous + delta * (1 - Math.exp(-dt / response));
+      // Keep every crane pose visible, even when a wheel gesture jumps ahead.
+      // At 60 Hz this advances less than one source frame per paint.
+      if (previous < .50 && target > previous) p = Math.min(p, previous + dt * .000065);
+      if (target < .50 && previous > target) p = previous > .50 ? Math.max(p, .50) : Math.max(p, previous - dt * .000065);
       const ctx = this.ctx, w = this.w, h = this.h, s = this.unit;
       this.speed.textContent = String(Math.round(p > .5 && p < .99 ? speed : 0)).padStart(2, '0');
       if (p === this.lastProgress && !this.dirty) return;
       const liftEnd = 79, rotateEnd = 128, end = 177;
-      let frame = mix(0, liftEnd, range(p, .04, .19));
-      if (p >= .19) frame = mix(liftEnd, rotateEnd, range(p, .19, .31));
-      if (p >= .38) frame = mix(rotateEnd, end, range(p, .38, .46));
+      let frame = mix(0, liftEnd, ease(range(p, .04, .19)));
+      if (p >= .19) frame = mix(liftEnd, rotateEnd, ease(range(p, .19, .31)));
+      if (p >= .38) frame = mix(rotateEnd, end, ease(range(p, .38, .46)));
       this.crane.seek(frame / end);
       const pullback = ease(range(p, .50, .57)), drive = range(p, .57, .80), turn = range(p, .80, .87), corner = ease(range(p, .87, .91));
       this.turn.seek(turn);
@@ -149,8 +180,11 @@
       const required = p < .31 ? ['stackBlue', 'stackOrange'] : ['chassis', 'container', 'wheelFront', 'wheelRear'];
       if (p >= .46 && p < .57) required.push('craneBase', 'spreader');
       if (required.some(key => !this.readyParts.has(key))) return;
-      if (p < .46 && !this.crane.ready()) return;
+      if (p < .46 && !this.crane.blendReady()) return;
       if (p >= .80 && !this.turn.image(true)) return;
+      // Commit only after both neighboring crane images have decoded. A cache
+      // miss holds the playhead as well as the canvas, avoiding catch-up jumps.
+      this.playhead = p;
       this.lastProgress = p; this.dirty = false;
       const loadingFloor = h * (this.mobile ? .66 : .90), drivingFloor = h * (this.mobile ? .30 : .40);
       const floor = mix(loadingFloor, drivingFloor, pullback);
@@ -176,7 +210,7 @@
       } else {
         const roadReveal = ease(turn);
         ctx.fillStyle = '#111'; ctx.fillRect(0, mix(drivingFloor, 0, roadReveal), w, h);
-        const image = this.turn.image(true);
+        const image = this.turn.blendedImage();
         const dock = ease(range(p, .965, 1));
         const startWidth = (this.mobile ? 720 : 530) * s;
         const truckWidth = mix(mix(startWidth, Math.min(w * .45, h * .65), corner), h * .336, dock);
@@ -224,7 +258,7 @@
       const copyVisible = p > .91;
       this.copy.style.visibility = copyVisible ? 'visible' : 'hidden'; this.copy.inert = !copyVisible;
       this.copy.style.opacity = ease(range(p, .91, .94)) * (1-ease(range(p,.965,.995)));
-      this.copy.style.transform = `translate3d(${(1 - ease(range(p, .91, .94))) * w * .57}px,${mix(70, -this.copyTravel, range(p, .94, 1))}px,0)`;
+      this.copy.style.transform = `translate3d(${(1 - ease(range(p, .91, .94))) * w * .57}px,${mix(70, -this.copyTravel, range(p, .94, .965))}px,0)`;
       const phase = p < .19 ? 'lift' : p < .31 ? 'rotate' : p < .38 ? 'empty-trailer-arrives' : p < .46 ? 'lower-container' : p < .50 ? 'release' : p < .57 ? 'depart' : p < .80 ? 'drive' : p < .87 ? 'overhead' : p < .94 ? 'road-bend' : p < .965 ? 'reliability' : 'container-handoff';
       this.section.dataset.phase = phase; this.section.dataset.progress = p.toFixed(4); this.section.dataset.loaded = String(p >= .46);
       this.section.querySelector('.freight-hint').style.opacity = p < .31 ? '1' : '0';

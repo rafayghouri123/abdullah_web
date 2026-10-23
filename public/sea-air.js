@@ -7,7 +7,7 @@
   class OceanSurface {
     constructor(canvas, image, reduced) {
       this.canvas = canvas; this.reduced = reduced;
-      const gl = canvas.getContext('webgl', {alpha: false, antialias: false, powerPreference: 'low-power'});
+      const gl = canvas.getContext('webgl', {alpha: false, antialias: false, powerPreference: 'high-performance'});
       if (!gl) return;
       this.gl = gl;
       const vertex = `attribute vec2 position; varying vec2 uv; void main(){uv=position*.5+.5;gl_Position=vec4(position,0.,1.);}`;
@@ -76,13 +76,20 @@
       this.title=section.querySelector('.ocean-heading');this.reasons=section.querySelector('.ocean-reasons');
       this.sky=section.querySelector('.sky-layer');this.plane=section.querySelector('.airplane');this.clouds=[...section.querySelectorAll('.journey-cloud')];
       this.water=new OceanSurface(section.querySelector('.ocean-surface'),section.querySelector('.ocean-texture'),reduced);
-      this.p=null;this.last=0;this.waterFrame=0;this.resize();
+      this.p=null;this.last=0;this.resize();
     }
-    resize(){this.w=this.pin.clientWidth;this.h=innerHeight;this.mobile=this.w<768;this.water.resize(this.w,this.h);}
-    update(t){
-      const bounds=this.section.getBoundingClientRect();if(bounds.top>this.h||bounds.bottom<0)return;
+    resize(){
+      this.w=this.pin.clientWidth;this.h=innerHeight;this.mobile=this.w<768;this.water.resize(this.w,this.h);
+      this.shipBaseHeight=this.h*2.5;
+      this.ship.style.height=this.shipBaseHeight+'px';this.ship.style.width=this.shipBaseHeight*731/3579+'px';
+      this.planeWidth=this.w*(this.mobile?1.7:1.20);
+      this.plane.style.width=this.planeWidth+'px';this.plane.style.height=this.planeWidth*2211/2221+'px';
+      for(const cloud of this.clouds)cloud.style.width=(this.mobile?1.6:1.05)*this.w+'px';
+    }
+    update(t, bounds=this.section.getBoundingClientRect(), sectionHeight=this.section.offsetHeight){
+      if(bounds.top>this.h||bounds.bottom<0)return;
       if(this.reduced){this.water.draw(0,[.5,.5,.035,.34]);return;}
-      const target=clamp(-bounds.top/(this.section.offsetHeight-this.h));
+      const target=clamp(-bounds.top/(sectionHeight-this.h));
       const dt=Math.min(64,t-(this.last||t));this.last=t;
       this.p=this.p===null||bounds.top>=0?target:mix(this.p,target,1-Math.exp(-dt/125));
       if(Math.abs(this.p-target)<.00002)this.p=target;
@@ -94,10 +101,9 @@
       // During the upward reveal, hold the ship's central white container at the
       // truck cargo's screen position; only the road/water boundary moves.
       const centerX=w*.5+bobX,centerY=h*(.5+.03*afloat)+bobY-Math.max(0,bounds.top);
-      this.ship.style.height=shipHeight+'px';this.ship.style.width=shipHeight*731/3579+'px';
-      this.ship.style.transform=`translate3d(${centerX}px,${centerY}px,0) translate(-50%,-50%) rotate(${Math.sin(t*.00039)*.22*afloat}deg)`;
+      this.ship.style.transform=`translate3d(${centerX}px,${centerY}px,0) translate(-50%,-50%) rotate(${Math.sin(t*.00039)*.22*afloat}deg) scale(${shipHeight/this.shipBaseHeight})`;
       this.sea.style.opacity=1-ease(range(p,.77,.89));
-      if(t-this.waterFrame>32&&p<.90){this.water.draw(t,[centerX/w,centerY/h,shipHeight*731/3579/w*.45,shipHeight/h]);this.waterFrame=t;}
+      if(p<.90)this.water.draw(t,[centerX/w,centerY/h,shipHeight*731/3579/w*.45,shipHeight/h]);
       this.title.style.opacity=ease(range(p,0,.035))*(1-ease(range(p,.08,.18)));this.title.style.transform=`translateY(${-range(p,.05,.20)*80}px)`;
       const reasonsOpacity=ease(range(p,.20,.34))*(1-ease(range(p,.58,.67)));
       this.reasons.style.opacity=reasonsOpacity;this.reasons.style.transform=`translateY(${(1-ease(range(p,.20,.34)))*70}px)`;
@@ -112,14 +118,12 @@
         const x=finalX+incomingX-clear*w*(front?.6:.18)+drift;
         const y=finalY+incomingY-clear*h*(front?-.75:.48);
         const scale=mix(1.65,1,cover)+clear*.22;
-        cloud.style.width=(this.mobile?1.6:1.05)*w+'px';
         cloud.style.transform=`translate3d(${x}px,${y}px,0) scale(${scale}) rotate(${i%2?-8:7}deg)`;
         cloud.style.opacity=(front?.58:.87)*cover*(1-ease(range(p,front?.88:.83,1)));
       });
       // The plane crosses the SAME cloud bank while the ship is still visible underneath.
       const flight=ease(range(p,.70,1));
-      const planeWidth=w*(this.mobile?1.7:1.20);
-      this.plane.style.width=planeWidth+'px';this.plane.style.height=planeWidth*2211/2221+'px';
+      const planeWidth=this.planeWidth;
       this.plane.style.transform=`translate3d(${mix(-planeWidth*.55,w+planeWidth*.42,flight)}px,${h*.49}px,0) translate(-50%,-50%) rotate(${-3+flight*5}deg)`;
       this.plane.style.opacity=ease(range(p,.69,.73));
       this.section.dataset.phase=p<.55?'ocean':p<.70?'cloud-ascent':p<.90?'ship-plane-overlap':'flight';

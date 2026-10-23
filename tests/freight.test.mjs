@@ -55,16 +55,28 @@ test('compact scroll pacing preserves phase order, content time, and both handof
   const h=harness(), map=h.window.FreightJourney.timelineProgress;
   assert.equal(map(-1),0);
   assert.equal(map(2),1);
-  assert.equal(map(.035),.19,'pickup completes within 0.273 viewport heights');
-  assert.equal(map(.324),.57,'loading and departure complete within the shorter track');
-  assert.equal(map(.693),.80,'services retain almost three viewport heights of scroll');
+  assert.equal(map(.015),.19,'pickup requires just 0.117 viewport heights');
+  assert.equal(map(.10),.50,'loading and release need under one viewport of scrolling');
+  assert.equal(map(.52),.80,'services retain 2.73 viewport heights of scroll');
+  assert.equal(map(.70),.94,'reliability text appears before the longer reading segment');
+  assert.equal(map(.90),.965,'reading gets 1.56 viewport heights before docking');
+  assert.equal(map(.91),.965,'hold the final text fully visible before the handoff');
   let previous=0;
-  for(let i=0;i<=1000;i++){
-    const p=map(i/1000);
+  for(let i=0;i<=10000;i++){
+    const p=map(i/10000);
     assert.ok(p>=previous && p-previous<.01,'no skipped or reversed choreography at phase boundaries');
     previous=p;
   }
   for(let i=1000;i>=0;i--)assert.ok(map(i/1000)<=map(Math.min(1,(i+1)/1000)));
+});
+
+test('all reliability text reaches the viewport before the ship handoff fades it',async()=>{
+  const h=harness(),journey=new h.window.FreightJourney(h.section,false);
+  await h.settle();h.tick();journey.update(.965,0);
+  await h.settle();h.tick();journey.update(.965,0);
+  const copy=h.section.querySelector('.freight-reliability');
+  assert.equal(copy.style.opacity,1);
+  assert.ok(copy.style.transform.includes(`${-journey.copyTravel}px`),'last text must be fully scrolled into view');
 });
 
 test('pending frames preserve the canvas; fast scrolling settles smoothly in both directions', async () => {
@@ -74,10 +86,16 @@ test('pending frames preserve the canvas; fast scrolling settles smoothly in bot
   await h.settle(); h.tick(); journey.update(0, 0);
   const before = h.clears();
   h.tick(); journey.update(.43, 90);
-  assert.equal(h.clears(), before, 'keep the last rendered scene during a cache miss');
+  assert.ok(journey.lastProgress < .01, 'a fast gesture cannot jump over crane poses');
+  for(let i=0;i<180;i++){h.tick();journey.update(.43,90);}
+  const heldProgress=journey.lastProgress, heldClears=h.clears();
+  for(let i=0;i<20;i++){h.tick();journey.update(.43,90);}
+  assert.equal(journey.lastProgress,heldProgress,'hold the playhead while neighboring frames decode');
+  assert.equal(h.clears(),heldClears,'keep the last rendered scene during a cache miss');
+  assert.ok(heldClears>before,'already decoded nearby frames still animate');
   for (const target of [.43, .79, .86, .93, 1, .37]) {
     const start = journey.lastProgress;
-    for (let i = 0; i < 180; i++) { await h.settle(); h.tick(); journey.update(target, 30); }
+    for (let i = 0; i < 650 && Math.abs(journey.lastProgress-target)>=.00002; i++) { await h.settle(); h.tick(); journey.update(target, 30); }
     assert.ok(Math.abs(journey.lastProgress - target) < .00002, `settles at ${target}`);
     assert.notEqual(journey.lastProgress, start);
     if(target===1)assert.equal(h.section.dataset.phase,'container-handoff','the cargo stays for the ship reveal');
@@ -85,15 +103,43 @@ test('pending frames preserve the canvas; fast scrolling settles smoothly in bot
   assert.equal(h.section.dataset.loaded, 'false', 'reverse scroll restores the empty trailer');
 });
 
-test('truck responds within 100ms and keeps moving while turn frames are pending', async()=>{
+test('pickup and placement advance less than one source frame per paint', async()=>{
+  const h=harness(),journey=new h.window.FreightJourney(h.section,false);
+  let previousFrame=0, paints=0;
+  for(let i=0;i<600;i++){
+    await h.settle();h.tick();journey.update(.50,99);
+    if(journey.lastProgress>=.46)break;
+    assert.ok(journey.crane.position-previousFrame<1,'fast scrolling must not skip a crane pose');
+    previousFrame=journey.crane.position;paints++;
+  }
+  assert.ok(paints>300,'pickup and placement retain several seconds of visible movement');
+  assert.ok(journey.lastProgress>=.46,'the container reaches the trailer');
+});
+
+test('truck settles within 200ms and keeps moving while turn frames are pending', async()=>{
   const h=harness(),journey=new h.window.FreightJourney(h.section,false);
   await h.settle();h.tick();journey.update(.79,0);
   const before=h.clears();
   // Deliberately leave newly requested turn frames undecoded.
-  for(let i=0;i<6;i++){h.tick();journey.update(.84,40);}
+  for(let i=0;i<12;i++){h.tick();journey.update(.84,40);}
   assert.ok(h.clears()>before+4,'ready fallback artwork must allow the road/camera to keep moving');
-  assert.ok(Math.abs(journey.lastProgress-.84)<.003,'truck follows a scroll step within 100ms');
+  assert.ok(Math.abs(journey.lastProgress-.84)<.003,'truck follows a scroll step within 200ms');
   assert.equal(journey.turn.ready(),false,'test exercises an actual pending target frame');
-  for(let i=0;i<6;i++){h.tick();journey.update(.79,40);}
+  for(let i=0;i<12;i++){h.tick();journey.update(.79,40);}
   assert.ok(Math.abs(journey.lastProgress-.79)<.003,'reverse gestures respond just as quickly');
+});
+
+test('fractional truck poses blend both frames with correct transparent-edge weights',()=>{
+  const h=harness(),sequence=new h.window.SequenceForTest(['a','b'],()=>{});
+  const lower={width:1024,height:288},upper={width:1024,height:288},draws=[];
+  const ctx={clearRect(){},drawImage(image){draws.push({image,alpha:this.globalAlpha,mode:this.globalCompositeOperation});}};
+  sequence.cache=new Map([[0,{image:lower,ready:true}],[1,{image:upper,ready:true}]]);
+  sequence.blendCanvas={width:1024,height:288,getContext:()=>ctx};
+  sequence.position=.25;
+  assert.equal(sequence.blendedImage(),sequence.blendCanvas);
+  assert.deepEqual(draws,[{image:lower,alpha:.75,mode:'source-over'},{image:upper,alpha:.25,mode:'lighter'}]);
+  assert.equal(ctx.globalAlpha,1);
+  assert.equal(ctx.globalCompositeOperation,'source-over');
+  sequence.position=1;
+  assert.equal(sequence.blendedImage(),upper,'exact endpoints retain the original image');
 });

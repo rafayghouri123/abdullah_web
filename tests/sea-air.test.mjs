@@ -26,3 +26,27 @@ test('the ship cargo holds its screen position throughout forward and reverse ro
     }
   }
 });
+
+test('sea and aircraft update on every 60Hz paint without resizing image layers',()=>{
+  let top=-720*7*.72,waterPaints=0,sizeWrites=0;
+  const elements=new Map(),transforms=[];
+  const element=()=>({clientWidth:1280,getContext:()=>null,style:new Proxy({}, {set(target,key,value){
+    if(key==='width'||key==='height')sizeWrites++;
+    target[key]=value;return true;
+  }})});
+  const section={offsetHeight:720*8,dataset:{},getBoundingClientRect:()=>({top,bottom:top+720*8}),
+    querySelector(selector){if(!elements.has(selector))elements.set(selector,element());return elements.get(selector);},
+    querySelectorAll:()=>Array.from({length:8},element)};
+  const window={};
+  vm.runInNewContext(fs.readFileSync(new URL('../public/sea-air.js',import.meta.url),'utf8'),{window,innerHeight:720});
+  const journey=new window.SeaAirJourney(section,false);
+  journey.water.draw=()=>waterPaints++;
+  const initialSizeWrites=sizeWrites;
+  for(let i=1;i<=120;i++){
+    top-=3;journey.update(i*1000/60);
+    transforms.push(elements.get('.airplane').style.transform);
+  }
+  assert.equal(waterPaints,120,'water has no 30fps gate');
+  assert.equal(new Set(transforms).size,120,'aircraft advances at every display frame');
+  assert.equal(sizeWrites,initialSizeWrites,'scrolling uses transforms without triggering image layout');
+});

@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "check": "node --check public/recreation.js && node --check public/freight.js && node --check public/globe.js && node --check public/sea-air.js",
+    "check": "node --check public/recreation.js && node --check public/freight.js && node --check public/globe.js && node --check public/sea-air.js && node --check public/crane-scroll.js",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {

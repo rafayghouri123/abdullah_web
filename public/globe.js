@@ -88,6 +88,7 @@
       });
     }
     resize() {
+      for(const pin of this.pins){pin.labelWidth=0;pin.labelHeight=0;pin.labelX=null;}
       const c = this.canvas, dpr = Math.min(devicePixelRatio || 1, 2);
       this.w = c.clientWidth; this.h = c.clientHeight;
       c.width = Math.round(this.w * dpr); c.height = Math.round(this.h * dpr); this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -122,7 +123,9 @@
         ctx.beginPath(); let started = false;
         route.forEach(v => { const p = this.project(v); const outside = Math.hypot(p.x - this.cx, p.y - this.cy) > r; if (p.z > 0 || outside) { if (!started) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); started = true; } else started = false; });
         ctx.strokeStyle = 'rgba(244,83,0,.42)'; ctx.lineWidth = .8; ctx.stroke();
-        const p = this.project(route[Math.floor(((this.reduced ? .4 : t * .00009) + index * .137) % 1 * 64)]);
+        const position=((this.reduced ? .4 : t*.00009)+index*.137)%1*64;
+        const lower=Math.floor(position),fraction=position-lower;
+        const p = this.project(route[lower].map((v,i)=>v+(route[Math.min(64,lower+1)][i]-v)*fraction));
         if (p.z > 0 || Math.hypot(p.x - this.cx, p.y - this.cy) > r) { ctx.fillStyle = '#ff722f'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, TAU); ctx.fill(); }
       });
       const occupied = [], names = [];
@@ -132,12 +135,16 @@
         const pulse = this.reduced ? .4 : (t * .00045 + index * .19) % 1;
         ctx.fillStyle = '#f45300'; ctx.beginPath(); ctx.arc(p.x, p.y, this.hover === pin ? 3.8 : 2.4, 0, TAU); ctx.fill();
         ctx.strokeStyle = `rgba(244,83,0,${(1 - pulse) * .55})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(p.x, p.y, 3 + pulse * 10, 0, TAU); ctx.stroke();
-        const width = pin.label.offsetWidth || pin.country.length * 7 + 16, height = pin.label.offsetHeight || 24;
+        const width = pin.labelWidth || (pin.labelWidth=pin.label.offsetWidth) || pin.country.length * 7 + 16;
+        const height = pin.labelHeight || (pin.labelHeight=pin.label.offsetHeight) || 24;
         const x = clamp(p.x - width / 2, 0, this.w - width); let y = p.y - height - 12;
         for (let attempt = 0; attempt < 5 && occupied.some(b => x < b.x + b.w + 3 && x + width + 3 > b.x && y < b.y + b.h + 3 && y + height + 3 > b.y); attempt++) y -= height + 4;
         occupied.push({x, y, w: width, h: height});
-        if (p.y - y > height + 20) { ctx.strokeStyle = 'rgba(244,83,0,.35)'; ctx.beginPath(); ctx.moveTo(p.x, p.y - 4); ctx.lineTo(x + width / 2, y + height); ctx.stroke(); }
-        pin.label.style.transform = `translate3d(${x}px,${y}px,0)`;
+        const blend=this.reduced?1:1-Math.exp(-dt/65);
+        if(pin.labelX==null){pin.labelX=x;pin.labelY=y;}
+        pin.labelX+=(x-pin.labelX)*blend;pin.labelY+=(y-pin.labelY)*blend;
+        if (p.y - y > height + 20) { ctx.strokeStyle = 'rgba(244,83,0,.35)'; ctx.beginPath(); ctx.moveTo(p.x, p.y - 4); ctx.lineTo(pin.labelX + width / 2, pin.labelY + height); ctx.stroke(); }
+        pin.label.style.transform = `translate3d(${pin.labelX}px,${pin.labelY}px,0)`;
         pin.label.style.opacity = clamp(p.z * 4, .15, 1); pin.label.classList.toggle('is-highlighted', pin === this.hover);
         names.push(pin.country);
       });
