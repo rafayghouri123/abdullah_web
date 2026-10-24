@@ -1,25 +1,21 @@
 import Script from 'next/script';
 
 export const metadata = {
-  title: 'United Carriers | Every leg of the journey',
+  title: 'MOBIN IMPEX | Customs Clearing & Freight Forwarding',
   description:
-    'Freight forwarding, land transport, and customs brokerage, unified across APAC under one accountable team.',
+    'Licensed customs clearing and freight forwarding since 1996. MOBIN IMPEX provides reliable logistics solutions from Karachi, Pakistan.',
   robots: { index: false, follow: false },
   openGraph: {
-    title: 'United Carriers | Global Freight Forwarding and Logistics',
+    title: 'MOBIN IMPEX | Customs Clearing & Freight Forwarding',
     description:
-      'Freight forwarding, land transport, and customs brokerage, unified across APAC under one accountable team.',
+      'Dependable customs clearance, freight forwarding and cargo support. Based in Karachi, with 24/7 customer support.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'United Carriers | Global Freight Forwarding and Logistics',
+    title: 'MOBIN IMPEX | Customs Clearing & Freight Forwarding',
     description:
-      'Freight forwarding, land transport, and customs brokerage, unified across APAC under one accountable team.',
-  },
-  icons: {
-    icon: '/assets/db7d10ef3e34eb28f7.png',
-    apple: '/assets/2d399004bb68a24074.jpg',
+      'Dependable customs clearance, freight forwarding and cargo support. Based in Karachi, with 24/7 customer support.',
   },
 };
 
@@ -32,6 +28,7 @@ export default function RootLayout({ children }) {
         <link rel="stylesheet" href="/assets/reference.css" />
         <link rel="stylesheet" href="/recreation.css" />
         <link rel="stylesheet" href="/sea-air.css" />
+        <link rel="stylesheet" href="/company.css" />
         <Script id="united-carriers-animations" strategy="afterInteractive">
           {`if (!window.__unitedCarriersAnimationsLoaded) {
             window.__unitedCarriersAnimationsLoaded = true;

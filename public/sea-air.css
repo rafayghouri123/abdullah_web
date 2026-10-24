@@ -47,3 +47,12 @@
  .sea-air-pin .ocean-reasons{position:relative;inset:auto;width:100%;opacity:1;display:grid;gap:5vh 7vw}
  .sea-air-pin .home-why-main-item:nth-child(n) .home-why-main-item-inner{align-items:flex-start;text-align:left}
 }
+/* Filtered artwork stays static inside the moving compositor layers. */
+.scene-artwork{display:block;width:100%;height:100%;max-width:none;object-fit:contain}
+.sea-air-pin .freight-ship,.sea-air-pin .airplane,.journey-cloud.foreground-cloud{filter:none}
+.freight-ship>.scene-artwork{filter:drop-shadow(6px 8px 6px #00162870)}
+.airplane>.scene-artwork{filter:drop-shadow(-35px 55px 22px #273e624d)}
+.foreground-cloud>.scene-artwork{filter:blur(1px)}
+.journey-cloud>.scene-artwork{height:auto}
+.air-surface{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}
+.air-composited .airplane,.air-composited .journey-cloud{display:none}

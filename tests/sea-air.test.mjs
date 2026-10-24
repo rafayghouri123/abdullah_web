@@ -27,7 +27,7 @@ test('the ship cargo holds its screen position throughout forward and reverse ro
   }
 });
 
-test('sea and aircraft update on every 60Hz paint without resizing image layers',()=>{
+for(const composited of [false,true])test(`sea and aircraft update on every 60Hz paint (${composited?'GPU':'image fallback'}) without resizing image layers`,()=>{
   let top=-720*7*.72,waterPaints=0,sizeWrites=0;
   const elements=new Map(),transforms=[];
   const element=()=>({clientWidth:1280,getContext:()=>null,style:new Proxy({}, {set(target,key,value){
@@ -41,10 +41,16 @@ test('sea and aircraft update on every 60Hz paint without resizing image layers'
   vm.runInNewContext(fs.readFileSync(new URL('../public/sea-air.js',import.meta.url),'utf8'),{window,innerHeight:720});
   const journey=new window.SeaAirJourney(section,false);
   journey.water.draw=()=>waterPaints++;
+  if(composited)journey.air={ready:true,draw(clouds,plane){
+    assert.equal(clouds.length,8,'keep every cloud layer');
+    assert.ok(clouds.every(cloud=>Number.isFinite(cloud.x)&&cloud.w>0));
+    assert.ok(plane.w>journey.planeWidth,'shadow padding is included');
+    transforms.push(plane.x);
+  }};
   const initialSizeWrites=sizeWrites;
   for(let i=1;i<=120;i++){
     top-=3;journey.update(i*1000/60);
-    transforms.push(elements.get('.airplane').style.transform);
+    if(!composited)transforms.push(elements.get('.airplane').style.transform);
   }
   assert.equal(waterPaints,120,'water has no 30fps gate');
   assert.equal(new Set(transforms).size,120,'aircraft advances at every display frame');

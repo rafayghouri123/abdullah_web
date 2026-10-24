@@ -28,11 +28,12 @@ const hero=$('.home-hero-wrap'),heroText=$('.home-hero-text-wrap'),heroGlobe=$('
 const sea=$('.ocean-sequence');
 const seaAir = new window.SeaAirJourney(sea, reduced);
 let lastY=-1,lastTime=0,velocity=0,renderTime=0,heroProgress=0;
-let frameWindow=0,frameCount=0;
+let frameWindow=0,frameCount=0,frameWork=0;
 function render(t){requestAnimationFrame(render);if(document.hidden)return;craneScroll.beforeUpdate();const y=scrollY,changed=y!==lastY;
-if(!frameWindow || t-frameWindow>2000){frameWindow=t;frameCount=0;}
+const workStart=performance.now();
+if(!frameWindow || t-frameWindow>2000){frameWindow=t;frameCount=0;frameWork=0;}
 frameCount++;
-if(t-frameWindow>=1000){document.documentElement.dataset.animationFps=String(Math.round(frameCount*1000/(t-frameWindow)));frameWindow=t;frameCount=0;}
+if(t-frameWindow>=1000){document.documentElement.dataset.animationFps=String(Math.round(frameCount*1000/(t-frameWindow)));document.documentElement.dataset.animationWorkMs=(frameWork/frameCount).toFixed(2);frameWindow=t;frameCount=0;frameWork=0;}
 // Read scene geometry together before changing transforms or canvas styles.
 const heroBounds=hero.getBoundingClientRect(),freightBounds=journey.section.getBoundingClientRect(),seaBounds=sea.getBoundingClientRect();
 const freightHeight=journey.section.offsetHeight,seaHeight=sea.offsetHeight;
@@ -45,19 +46,18 @@ transform(heroGlobe,`translateY(${heroEase*8}vh) scale(${1+heroEase*.2})`);trans
 journey.update(craneScroll.active ? .50 : window.FreightJourney.timelineProgress(clamp(-freightBounds.top/(freightHeight-innerHeight*2))), velocity);
 craneScroll.afterUpdate();
 seaAir.update(t,seaBounds,seaHeight);
+frameWork+=performance.now()-workStart;
 if(!changed&&t-lastTime>400)return;velocity+=(Math.min(99,Math.abs(y-lastY)*2)-velocity)*.15;lastY=y;if(changed)lastTime=t;
 bar.style.width=100*y/Math.max(1,document.documentElement.scrollHeight-innerHeight)+'%';const dark=(heroBounds.bottom>80)||(seaBounds.top<80&&seaBounds.bottom>80);header?.classList.toggle('on-scroll',y>60);header?.classList.toggle('on-dark',dark);
 
 }
 requestAnimationFrame(render);
 let resizeTimer;addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{journey.resize();seaAir.resize();resizeGlobe();lastY=-1},150)});
-// Make the source-site links intentional and keep this recreation self-contained.
-const note=document.createElement('div');note.className='replica-note';note.innerHTML='Visual recreation of <a href="https://unitedcarriers.com/" target="_blank" rel="noopener">United Carriers</a>. Company information and artwork belong to their respective owners.';document.body.appendChild(note);
 })();
 // Accessible controls for the recreated navigation and footer.
 (() => {
  const dropdown=document.querySelector('.header-dropdown');
  if(dropdown){const close=document.createElement('button');close.className='replica-menu-close';close.textContent='CLOSE ×';close.setAttribute('aria-label','Close menu');close.onclick=()=>{document.querySelector('.header').classList.remove('show-menu','on-open-nav');document.querySelector('.header-menu-toggle').classList.remove('active');document.querySelector('.header-menu-toggle').setAttribute('aria-expanded','false');dropdown.classList.remove('active')};dropdown.prepend(close)}
  const buttons=[...document.querySelectorAll('.footer-info-btn')],panels=[...document.querySelectorAll('.footer-info-text-inner')];buttons.forEach((button,index)=>{button.setAttribute('aria-pressed',String(index===0));button.addEventListener('click',()=>{buttons.forEach((b,i)=>{b.classList.toggle('active',i===index);b.setAttribute('aria-pressed',String(i===index))});panels.forEach((p,i)=>p.classList.toggle('active',i===index))})});
- const cookies=document.querySelector('.cky-banner-element');if(cookies){const dialog=document.createElement('dialog');dialog.className='cookie-dialog';dialog.innerHTML='<h2>Cookie settings</h2><p>This recreation does not use analytics or advertising cookies.</p><form method="dialog"><button>Close</button></form>';document.body.appendChild(dialog);cookies.addEventListener('click',()=>dialog.showModal())}
+ const cookies=document.querySelector('.cky-banner-element');if(cookies){const dialog=document.createElement('dialog');dialog.className='cookie-dialog';dialog.innerHTML='<h2>Cookie settings</h2><p>This website does not use analytics or advertising cookies.</p><form method="dialog"><button>Close</button></form>';document.body.appendChild(dialog);cookies.addEventListener('click',()=>dialog.showModal())}
 })();
