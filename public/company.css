@@ -8,4 +8,12 @@
 .home-ins-cms-item-inner{cursor:pointer}
 .home-ins-main-inner{grid-template-columns:1fr}
 .home-ins-main-inner>.home-ins-cms-thumb{display:none}
+.header-linkedin-item+.header-linkedin-item{display:none}
+.header-linkedin-list-inner{animation:none!important;transform:none!important}
+.cta .cta-text-wrap{width:min(760px,90vw);max-width:none;justify-self:center}
+.cta .cta-title{width:100%;max-width:none}
+.cta .cta-title .heading{font-size:clamp(36px,4.5vw,64px)}
+.cta .cta-desc{width:min(560px,100%);max-width:none}
+@media(min-width:768px){.home-partners-main:nth-child(2) .home-partners-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:767px){.header .header-logo{font-size:15px}.home-hero-label .txt{font-size:14px}.company-client-name{padding:12px 8px}.footer .footer-logo{font-size:12vw}.home-partners-item-inner{min-height:90px}}
+@media(max-width:767px){.footer-socials{display:none}.footer-main-contact{grid-template-columns:1fr!important}.footer-main-contact>.footer-content-item{min-width:0;gap:8px}.footer-main-contact a{margin:0}}

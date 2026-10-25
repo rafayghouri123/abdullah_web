@@ -1,0 +1,46 @@
+.mi-contact,.mi-admin{--mi-blue:#0016cb;--mi-ink:#111;--mi-line:#d8dbe4;font-size:16px;line-height:1.5;color:var(--mi-ink)}
+.mi-contact *,.mi-admin *{box-sizing:border-box}
+.mi-contact{position:relative;display:grid;grid-template-columns:1fr 1.1fr;background:#f7f8fa;scroll-margin-top:76px;isolation:isolate}
+.mi-contact-intro{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;background:var(--mi-blue);color:white;padding:80px max(32px,5vw)}
+.mi-eyebrow{display:block;font-family:'BT Steinhart Mono',monospace;font-size:11px;letter-spacing:.06em;line-height:1.6}
+.mi-contact h2{font-size:clamp(42px,4.9vw,76px);line-height:1.03;letter-spacing:-.055em;margin:42px 0 26px;font-weight:500}
+.mi-contact h2 span{color:#aab5ff}
+.mi-contact-intro>p{max-width:370px;font-size:16px;line-height:1.7;color:#e0e4ff;margin:0}
+.mi-contact-details{display:grid;gap:8px;margin-top:55px;position:relative;z-index:1}
+.mi-contact-details .mi-eyebrow{margin-bottom:12px;color:#bec6ff}
+.mi-contact-details a{font-size:clamp(15px,1.5vw,21px);color:white;overflow-wrap:anywhere}
+.mi-contact-details>span:last-child{font-size:12px;color:#d7dcff;margin-top:12px}
+.mi-contact-mark{font-size:210px;line-height:1;align-self:flex-end;opacity:.15;margin-top:15px;margin-bottom:-50px;pointer-events:none}
+.mi-contact-panel{padding:70px max(28px,5vw);min-width:0}
+.mi-form-heading{display:flex;justify-content:space-between;gap:20px;color:var(--mi-blue);padding-bottom:30px;border-bottom:1px solid var(--mi-line)}
+.mi-field{display:flex;flex-direction:column;gap:9px;margin-top:27px;min-width:0}
+.mi-field label{font-family:'BT Steinhart Mono',monospace;font-size:11px;letter-spacing:.02em;text-transform:uppercase}
+.mi-field input,.mi-field select,.mi-field textarea{width:100%;min-width:0;border:0;border-bottom:1px solid #a5aab8;border-radius:0;background:transparent;color:#111;font:inherit;font-size:16px;padding:10px 0 15px;outline-offset:4px;box-shadow:none}
+.mi-field textarea{resize:vertical;min-height:110px;max-height:360px}
+.mi-field input::placeholder,.mi-field textarea::placeholder{color:#777c88;opacity:1}
+.mi-field input:focus,.mi-field select:focus,.mi-field textarea:focus{outline:2px solid var(--mi-blue);border-color:var(--mi-blue)}
+.mi-submit-row{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:30px}
+.mi-submit-row p{font-size:12px;color:#646976;max-width:205px;margin:0}
+.mi-button{display:inline-flex;align-items:center;justify-content:space-between;gap:28px;min-height:50px;padding:16px 22px;border:1px solid var(--mi-blue);border-radius:0;background:var(--mi-blue);color:#fff;font-family:'BT Steinhart Mono',monospace;font-size:12px;line-height:1.4;text-transform:uppercase;cursor:pointer;text-decoration:none;white-space:nowrap}
+.mi-button:hover{background:#081ca6;color:white}.mi-button:focus-visible,.mi-admin a:focus-visible,.mi-contact a:focus-visible{outline:2px solid #ff6500;outline-offset:4px}.mi-button:disabled{opacity:.6;cursor:wait}.mi-button span{font-size:20px}
+.mi-status{font-size:14px;line-height:1.6;margin:18px 0 0}.mi-status:empty{display:none}.mi-status[data-state=error]{color:#aa2424}.mi-status[data-state=success]{color:#17633c}.mi-honeypot{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.mi-admin{min-height:100svh;background:#f5f6fa;padding:0 5vw 64px}
+.mi-admin-nav{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--mi-line)}
+.mi-admin-brand{font-size:22px;font-weight:800;letter-spacing:-.05em;color:var(--mi-blue)}
+.mi-admin-nav a:not(.mi-admin-brand){font-size:12px;color:var(--mi-blue)}
+.mi-admin-login{max-width:490px;margin:70px auto;background:white;padding:44px;border:1px solid var(--mi-line)}
+.mi-admin h1{font-size:clamp(36px,5vw,64px);font-weight:500;letter-spacing:-.05em;line-height:1.08;margin:18px 0}
+.mi-admin-login h1{font-size:40px}.mi-admin-login>p{font-size:15px;color:#636976}.mi-admin-login .mi-button{margin-top:30px;width:100%}
+.mi-admin-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;padding:60px 0 35px}.mi-admin-heading p{color:#626879;margin-bottom:0}
+.mi-count{font-size:56px;line-height:1;letter-spacing:-.05em;color:var(--mi-blue)}
+.mi-notice{padding:30px;background:white;border:1px solid var(--mi-line);font-size:16px;line-height:1.7}.mi-notice h2{font-size:24px;margin:0 0 10px}.mi-notice code{font-size:14px}
+.mi-enquiries{display:grid;gap:16px}.mi-enquiry{display:grid;grid-template-columns:minmax(210px,1fr) 2fr;background:white;border:1px solid var(--mi-line)}
+.mi-enquiry-meta{padding:26px;border-right:1px solid var(--mi-line);min-width:0}.mi-enquiry h2{font-size:21px;line-height:1.3;letter-spacing:-.02em;margin:12px 0 8px;overflow-wrap:anywhere}.mi-enquiry-meta a{color:var(--mi-blue);overflow-wrap:anywhere;font-size:14px}.mi-enquiry time{display:block;font-size:12px;color:#626879;margin-top:18px}.mi-enquiry-message{padding:26px;min-width:0}.mi-tag{display:inline-block;border:1px solid #d7ddff;color:var(--mi-blue);background:#f4f6ff;padding:5px 10px;font-size:11px}.mi-enquiry-message p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.75;margin:20px 0 0}.mi-pagination{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-top:30px;font-size:13px}.mi-pagination a{color:var(--mi-blue);text-decoration:underline}
+@media(max-width:900px){.mi-contact{grid-template-columns:1fr}.mi-contact-intro{padding:52px 7vw}.mi-contact h2{margin-top:25px}.mi-contact-details{margin-top:32px}.mi-contact-mark{position:absolute;right:35px;bottom:30px;font-size:160px}.mi-contact-panel{padding:42px 7vw}.mi-contact-intro>p{max-width:470px}}
+@media(max-width:600px){.mi-form-heading{padding-bottom:23px}.mi-submit-row{align-items:stretch;flex-direction:column;gap:18px}.mi-submit-row p{max-width:none}.mi-submit-row .mi-button{width:100%}.mi-admin{padding:0 5vw 40px}.mi-admin-nav{min-height:76px}.mi-admin-brand{font-size:19px}.mi-admin-login{padding:28px 22px;margin-top:35px}.mi-admin-heading{padding:40px 0 25px;align-items:start}.mi-admin-heading h1{font-size:37px}.mi-count{font-size:40px}.mi-enquiry{grid-template-columns:1fr}.mi-enquiry-meta{border-right:0;border-bottom:1px solid var(--mi-line)}.mi-enquiry-meta,.mi-enquiry-message{padding:22px}.mi-admin-nav .mi-button{min-height:40px;padding:10px 14px;font-size:10px}.mi-pagination{gap:10px}}
+.mi-enquiry-status{margin-top:26px;padding-top:20px;border-top:1px solid var(--mi-line)}
+.mi-enquiry-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.mi-status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid #d7ddff;background:#f4f6ff;color:#0016cb;font-size:12px;line-height:1.5}
+.mi-status-badge[data-resolved=true]{border-color:#b8dfc9;background:#edf8f1;color:#17633c}
+.mi-resolve-button{min-height:42px;padding:12px 16px;font-size:11px;white-space:normal;text-align:left}
+.mi-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

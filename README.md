@@ -22,7 +22,24 @@ Open the Local URL printed by Next.js (usually http://localhost:3000). For a pro
 
 The page uses the App Router and React server rendering. The scene markup remains an HTML island because its exact nested structure and class names are inputs to the canvas renderers; rewriting or normalizing them would risk shifting the frame alignment. New page content can be added as React components around this scene.
 
-## Scope
+## Contact form and admin inbox
+
+The contact section includes full name, email address, shipment/enquiry type, and message. Valid submissions are saved server-side to Neon PostgreSQL. `/admin` requires authentication before any enquiry data is queried or rendered. It lists all enquiries, newest first, in pages of 20, with full messages and Pakistan timestamps.
+
+Each enquiry starts **Open**. Use **Mark as resolved** when handled, or **Reopen enquiry** to undo it. Status is saved in Neon and survives page reloads; existing enquiries remain open. The first database access adds a nullable `resolved_at` column automatically, requiring table-owner privileges for that migration. The update endpoint checks the admin session and request origin before changing a record. Run `node scripts/verify-enquiry-status.mjs` against the local server on port 4175 for a live resolve/reopen check; it creates and removes only its own test enquiry.
+
+1. Open `.env` in this project. The local admin username, password hash, and random session secret are already configured. Keep this file private; Git ignores it.
+2. In Neon, open your project → **Connect**, copy the PostgreSQL connection string, and set `DATABASE_URL="postgresql://..."`. This is a connection string, not a Neon management API key. See [Neon's connection guide](https://neon.com/docs/get-started/connect-neon).
+3. Restart the Next.js server. The `contact_enquiries` table is created automatically when the authenticated inbox or first valid submission accesses the database. The Neon database role needs permission to create this table on first use.
+4. Open `/admin` and sign in using the credentials supplied for this project. To change the password, run `npm run admin:password`, copy the resulting hash into `.env`, and restart. Existing sessions become invalid when the password hash or session secret changes.
+
+For another deployment, configure `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, and `ADMIN_SESSION_SECRET` as private environment variables using `.env.example` as a guide. Never use `NEXT_PUBLIC_` for these values. Serve production over HTTPS: session cookies are HttpOnly, SameSite=Strict, Secure on HTTPS, and expire after eight hours. Sign-out clears the browser's cookie. Enquiry values use parameterized queries and render as escaped text.
+
+Both form validation and request size limits run on the server. Login attempts and contact submissions have a bounded per-process rate limit; for multiple server instances, configure a shared or edge rate limiter. Login is limited to 15 attempts per 15 minutes for this single-admin site. Database failures return an error and preserve the visitor's form fields. A successful UI message is shown only after the insert succeeds.
+
+Without `DATABASE_URL`, admin sign-in still works and shows setup guidance; contact submissions report that they could not be saved. Live Neon persistence must be verified after supplying the connection string: submit a test enquiry, confirm it in `/admin`, then sign out and confirm the inbox is inaccessible.
+
+## Original recreation scope
 
 Reference: [unitedcarriers.com](https://unitedcarriers.com/). This is a visual homepage recreation, not the company's operational site. Search indexing is disabled. Original company identity, copy, fonts, and artwork retain their respective ownership. The scroll playback and interactive globe are independent implementations; some timing and transitions are approximations. Reduced-motion preferences are supported.
 

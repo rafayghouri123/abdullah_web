@@ -1,5 +1,3 @@
-import Script from 'next/script';
-
 export const metadata = {
   title: 'MOBIN IMPEX | Customs Clearing & Freight Forwarding',
   description:
@@ -29,17 +27,7 @@ export default function RootLayout({ children }) {
         <link rel="stylesheet" href="/recreation.css" />
         <link rel="stylesheet" href="/sea-air.css" />
         <link rel="stylesheet" href="/company.css" />
-        <Script id="united-carriers-animations" strategy="afterInteractive">
-          {`if (!window.__unitedCarriersAnimationsLoaded) {
-            window.__unitedCarriersAnimationsLoaded = true;
-            for (const path of ['/frames.js', '/globe.js', '/freight-assets.js', '/freight.js', '/sea-air.js', '/crane-scroll.js', '/recreation.js']) {
-              const script = document.createElement('script');
-              script.src = path;
-              script.async = false;
-              document.body.appendChild(script);
-            }
-          }`}
-        </Script>
+        <link rel="stylesheet" href="/contact.css" />
       </head>
       <body className="body">{children}</body>
     </html>
