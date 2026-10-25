@@ -148,9 +148,20 @@
       this.air=new AirSurface(this.pin,this.plane,this.clouds);
       this.water=new OceanSurface(section.querySelector('.ocean-surface'),section.querySelector('.ocean-texture'),reduced);
       this.p=null;this.last=0;this.resize();
+      // First-load CSS/font layout and scrollbar changes need not fire a window
+      // resize. Observe the actual pinned viewport and the finished text layout.
+      if(typeof ResizeObserver==='function'){
+        this.layoutObserver=new ResizeObserver(()=>{
+          if(this.w!==this.pin.clientWidth || this.h!==(this.pin.clientHeight||innerHeight))this.resize();
+          else this.fitReasons();
+        });
+        this.layoutObserver.observe(this.pin);this.layoutObserver.observe(this.reasons);
+      }
     }
     resize(){
-      this.w=this.pin.clientWidth;this.h=innerHeight;this.mobile=this.w<768;this.water.resize(this.w,this.h);
+      const width=this.pin.clientWidth,height=this.pin.clientHeight||innerHeight;
+      if(!width||!height)return;
+      this.w=width;this.h=height;this.mobile=this.w<768;this.water.resize(this.w,this.h);
       this.shipBaseHeight=this.h*2.5;
       this.ship.style.height=this.shipBaseHeight+'px';this.ship.style.width=this.shipBaseHeight*731/3579+'px';
       this.planeWidth=this.w*(this.mobile?1.7:1.20);
@@ -160,8 +171,17 @@
       this.plane.cacheArtwork?.(this.planeWidth,this.planeWidth*2211/2221);
       for(const cloud of this.clouds)cloud.cacheArtwork?.((this.mobile?1.6:1.05)*this.w);
       this.air.resize(this.w,this.h);
+      this.fitReasons();
+    }
+    fitReasons(){
+      if(this.reduced||!this.h)return;
+      const height=this.reasons.offsetHeight||0;
+      const topSafe=Math.min(88,this.h*.16),bottomSafe=Math.max(24,this.h*.04);
+      this.reasonsScale=height?Math.min(1,(this.h-topSafe-bottomSafe)/height):1;
+      this.reasons.style.top=Math.max(topSafe,Math.min(this.h*(this.mobile?.22:.24),this.h-bottomSafe-height*this.reasonsScale))+'px';
     }
     update(t, bounds=this.section.getBoundingClientRect(), sectionHeight=this.section.offsetHeight){
+      if(!this.w||!this.h)return;
       if(bounds.top>this.h||bounds.bottom<0)return;
       if(this.reduced){this.water.draw(0,[.5,.5,.035,.34]);return;}
       const target=clamp(-bounds.top/(sectionHeight-this.h));
@@ -177,11 +197,13 @@
       // truck cargo's screen position; only the road/water boundary moves.
       const centerX=w*.5+bobX,centerY=h*(.5+.03*afloat)+bobY-Math.max(0,bounds.top);
       this.ship.style.transform=`translate3d(${centerX}px,${centerY}px,0) translate(-50%,-50%) rotate(${Math.sin(t*.00039)*.22*afloat}deg) scale(${shipHeight/this.shipBaseHeight})`;
+      // Reveal only after a valid pose is committed, never at the CSS origin.
+      this.ship.style.visibility='visible';
       this.sea.style.opacity=1-ease(range(p,.77,.89));
       if(p<.90)this.water.draw(t,[centerX/w,centerY/h,shipHeight*731/3579/w*.45,shipHeight/h]);
       this.title.style.opacity=ease(range(p,0,.035))*(1-ease(range(p,.08,.18)));this.title.style.transform=`translateY(${-range(p,.05,.20)*80}px)`;
       const reasonsOpacity=ease(range(p,.20,.34))*(1-ease(range(p,.58,.67)));
-      this.reasons.style.opacity=reasonsOpacity;this.reasons.style.transform=`translateY(${(1-ease(range(p,.20,.34)))*70}px)`;
+      this.reasons.style.opacity=reasonsOpacity;this.reasons.style.transform=`translateY(${(1-ease(range(p,.20,.34)))*70}px) scale(${this.reasonsScale})`;
       this.reasons.inert=reasonsOpacity<.05;
       this.sky.style.opacity=ease(range(p,.76,.90));
       const cover=ease(range(p,.55,.73)), clear=ease(range(p,.77,.97));

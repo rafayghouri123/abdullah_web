@@ -31,7 +31,7 @@ function harness() {
       await Promise.resolve();
     }
   };
-  return {window, section, images, settle, clears: () => clears, tick: () => { time += 16.67; }};
+  return {window, section, images, settle, clears: () => clears, tick: (ms = 16.67) => { time += ms; }};
 }
 
 test('frames are not presented before decode and survive distant cache eviction', async () => {
@@ -103,17 +103,33 @@ test('pending frames preserve the canvas; fast scrolling settles smoothly in bot
   assert.equal(h.section.dataset.loaded, 'false', 'reverse scroll restores the empty trailer');
 });
 
-test('pickup and placement advance less than one source frame per paint', async()=>{
-  const h=harness(),journey=new h.window.FreightJourney(h.section,false);
-  let previousFrame=0, paints=0;
-  for(let i=0;i<600;i++){
-    await h.settle();h.tick();journey.update(.50,99);
-    if(journey.lastProgress>=.46)break;
-    assert.ok(journey.crane.position-previousFrame<1,'fast scrolling must not skip a crane pose');
-    previousFrame=journey.crane.position;paints++;
+test('timed pickup, placement and release finish within three seconds at 30, 60 and 120 Hz', async()=>{
+  for(const fps of [30,60,120]){
+    const h=harness(),journey=new h.window.FreightJourney(h.section,false);
+    await h.settle();
+    journey.cranePlayback={started:0,from:0,duration:2800};
+    let previous=0,elapsed=0;
+    for(let i=0;i<Math.ceil(2800*fps/1000)+1;i++){
+      await h.settle();h.tick(1000/fps);elapsed+=1000/fps;journey.update(.50,99);
+      assert.ok(journey.lastProgress>=previous,'forward playback never reverses');
+      previous=journey.lastProgress;
+      if(previous===.50)break;
+    }
+    assert.equal(journey.lastProgress,.50,'placement and spreader release finish');
+    assert.ok(elapsed<=3000,'duration follows elapsed time, not frame count');
+    assert.ok(journey.cranePaints>=Math.floor(2.7*fps),'render a new pose each display frame');
+    assert.equal(journey.section.dataset.loaded,'true');
   }
-  assert.ok(paints>300,'pickup and placement retain several seconds of visible movement');
-  assert.ok(journey.lastProgress>=.46,'the container reaches the trailer');
+});
+
+test('timed crane playback keeps advancing through delayed image decodes',async()=>{
+  const h=harness(),journey=new h.window.FreightJourney(h.section,false);
+  await h.settle();
+  journey.cranePlayback={started:0,from:0,duration:2800};
+  for(let i=0;i<168;i++){h.tick(1000/60);journey.update(.50,99);}
+  h.tick(1);journey.update(.50,99);
+  assert.equal(journey.lastProgress,.50,'pending intermediate images cannot extend the animation');
+  assert.ok(h.clears()>=168,'decoded fallback poses still paint on each tick');
 });
 
 test('truck settles within 200ms and keeps moving while turn frames are pending', async()=>{

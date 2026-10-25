@@ -16,9 +16,9 @@ function harness(reduced=false){
   return {context,journey,gate,listeners,style};
 }
 
-test('fast scrolling locks until placement and release complete, then restores scrolling',()=>{
+test('entry plays the bounded crane sequence, then restores scrolling',()=>{
   const h=harness();
-  assert.equal(h.gate.input(110),false,'gentle entry scroll remains native');
+  assert.equal(h.gate.input(50),false,'scroll before the section remains native');
   assert.equal(h.gate.input(2000),true);
   assert.equal(h.style.overflow,'hidden');
   const lockedY=h.context.scrollY;
@@ -38,7 +38,7 @@ test('reverse scrolling, Escape, timeout, and reduced motion cannot leave scroll
     const h=harness();h.gate.input(2000);
     if(action==='reverse')assert.equal(h.gate.input(-100),false);
     if(action==='escape')h.listeners.keydown({key:'Escape'});
-    if(action==='timeout'){h.context.time=21000;h.gate.beforeUpdate();}
+    if(action==='timeout'){h.context.time=2800;h.gate.beforeUpdate();h.gate.afterUpdate();}
     assert.equal(h.gate.active,false,action);
     assert.equal(h.style.overflow,'clip',action);
   }
@@ -51,4 +51,17 @@ test('a scrollbar jump across the crane catches the sequence before it is skippe
   const h=harness();h.context.scrollY=7000;h.gate.beforeUpdate();
   assert.equal(h.gate.active,true);
   assert.ok(Math.abs(h.context.scrollY-1000)<1);
+});
+
+test('missing assets cannot hold scrolling beyond the 2.8-second animation budget',()=>{
+  const h=harness();h.gate.input(2000);
+  assert.equal(h.journey.cranePlayback.duration,2800);
+  h.context.time=2799;h.gate.beforeUpdate();h.gate.afterUpdate();
+  assert.equal(h.gate.active,true);
+  h.context.time=2800;h.gate.beforeUpdate();h.gate.afterUpdate();
+  assert.equal(h.gate.active,false);
+  assert.equal(h.style.overflow,'clip');
+  assert.equal(h.journey.cranePlayback,null);
+  assert.equal(h.journey.playhead,.50);
+  assert.equal(h.journey.section.dataset.craneDurationMs,'2800');
 });
