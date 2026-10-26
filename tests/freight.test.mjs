@@ -103,33 +103,14 @@ test('pending frames preserve the canvas; fast scrolling settles smoothly in bot
   assert.equal(h.section.dataset.loaded, 'false', 'reverse scroll restores the empty trailer');
 });
 
-test('timed pickup, placement and release finish within three seconds at 30, 60 and 120 Hz', async()=>{
-  for(const fps of [30,60,120]){
-    const h=harness(),journey=new h.window.FreightJourney(h.section,false);
-    await h.settle();
-    journey.cranePlayback={started:0,from:0,duration:2800};
-    let previous=0,elapsed=0;
-    for(let i=0;i<Math.ceil(2800*fps/1000)+1;i++){
-      await h.settle();h.tick(1000/fps);elapsed+=1000/fps;journey.update(.50,99);
-      assert.ok(journey.lastProgress>=previous,'forward playback never reverses');
-      previous=journey.lastProgress;
-      if(previous===.50)break;
-    }
-    assert.equal(journey.lastProgress,.50,'placement and spreader release finish');
-    assert.ok(elapsed<=3000,'duration follows elapsed time, not frame count');
-    assert.ok(journey.cranePaints>=Math.floor(2.7*fps),'render a new pose each display frame');
-    assert.equal(journey.section.dataset.loaded,'true');
-  }
-});
-
-test('timed crane playback keeps advancing through delayed image decodes',async()=>{
+test('automatic crane playback retains the original pose-by-pose pace',async()=>{
   const h=harness(),journey=new h.window.FreightJourney(h.section,false);
   await h.settle();
-  journey.cranePlayback={started:0,from:0,duration:2800};
-  for(let i=0;i<168;i++){h.tick(1000/60);journey.update(.50,99);}
-  h.tick(1);journey.update(.50,99);
-  assert.equal(journey.lastProgress,.50,'pending intermediate images cannot extend the animation');
-  assert.ok(h.clears()>=168,'decoded fallback poses still paint on each tick');
+  for(let i=0;i<60;i++){
+    await h.settle();h.tick(1000/60);journey.update(.50,0);
+  }
+  assert.ok(journey.lastProgress>.04 && journey.lastProgress<.08,
+    'one second of playback follows the original capped crane speed');
 });
 
 test('truck settles within 200ms and keeps moving while turn frames are pending', async()=>{

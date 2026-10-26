@@ -46,15 +46,13 @@
     }
     input(delta) {
       if (this.disabled) return false;
-      if (delta < 0) { this.release(false); return false; }
       if (this.active) return true;
+      if (delta < 0) return false;
       return this.capture(scrollY + delta);
     }
     capture(nextY, fromY = scrollY) {
       const {top, travel} = this.geometry(), current = Math.max(0, this.journey.lastProgress);
       if (this.done || current >= .50 || nextY < top || fromY > top + travel * window.CraneScroll.scrollProgress(.50)) return false;
-      const requested = window.FreightJourney.timelineProgress((nextY - top) / travel);
-      if (requested - current < .045) return false;
       this.active = true;
       this.started = performance.now();
       this.savedOverflow = document.documentElement.style.overflow;
