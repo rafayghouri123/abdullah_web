@@ -16,7 +16,7 @@ $$('.home-faq-main-item').forEach((item,i)=>{const title=item.querySelector('.ho
 $$('.footer-tab-item,.footer-tab').forEach(el=>el.addEventListener('click',()=>el.classList.toggle('active')));
 // Reveal content as it enters the viewport.
 const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in-view');observer.unobserve(e.target)}}),{threshold:.08});
-$$('.home-intro-title,.home-intro-desc,.home-intro-stats-item,.home-testi-text-wrap,.home-testi-item,.home-ins-text-wrap,.home-faq-text-wrap,.home-cta-wrap .heading').forEach(el=>{el.classList.add('reveal');observer.observe(el)});
+$$('.home-intro-title,.intro-story__paragraph,.home-intro-stats-item,.home-testi-text-wrap,.home-testi-item,.home-ins-text-wrap,.home-faq-text-wrap,.home-cta-wrap .heading').forEach(el=>{el.classList.add('reveal');observer.observe(el)});
 const bar=document.createElement('div');bar.className='scroll-progress';document.body.appendChild(bar);
 const journey = new window.FreightJourney(document.querySelector('.freight-journey'), reduced);
 const craneScroll = new window.CraneScroll(journey, reduced);

@@ -25,6 +25,56 @@ html,body,*{overflow-anchor:none}.header{position:fixed!important;top:0!importan
 .globe-controls button:hover,.globe-controls button:focus-visible{border-color:#f45300;color:#f45300}
 .globe-sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(max-width:767px){.country-label{font-size:9px;padding:4px 5px}.globe-controls{bottom:20px;right:20px}.globe-controls button{width:36px;height:36px}.home-hero-canvas{touch-action:pan-y}}
+
+/* Intro route occupies the left-column opening before the existing sticky image. */
+.home-intro-stick-wrap{position:relative}
+.intro-route{position:absolute;top:0;left:0;width:100%;max-width:540px;color:#111;pointer-events:none;z-index:1}
+.intro-route__meta,.intro-route__foot{display:flex;justify-content:space-between;align-items:center;gap:20px;font:10px/1.3 'BT Steinhart Mono',monospace;letter-spacing:.055em}
+.intro-route__meta{padding-bottom:12px;border-bottom:1px solid #d8d8d8}
+.intro-route__meta span:last-child{color:#999}
+.intro-route__title{margin-top:28px;font:clamp(33px,3.3vw,49px)/.94 'BT Steinhart',sans-serif;letter-spacing:-.045em}
+.intro-route__title span{color:#f45300}
+.intro-route__map{position:relative;width:100%;height:310px;margin-top:12px}
+.intro-route__svg{display:block;width:100%;height:100%;overflow:visible}
+.intro-route__track,.intro-route__line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.intro-route__track{stroke:#ddd}
+.intro-route__line{stroke:#f45300}
+.intro-route__node{fill:#fff;stroke:#111;stroke-width:2;transition:fill .35s,stroke .35s}
+.intro-route__marker{opacity:0;transition:opacity .25s}
+.intro-route.is-active .intro-route__marker{opacity:1}
+.intro-route__marker rect{fill:#f45300}
+.intro-route__marker path{fill:none;stroke:#fff;stroke-width:1}
+.intro-route__stop{position:absolute;display:flex;flex-direction:column;gap:5px;opacity:.34;transition:opacity .5s,transform .5s;transform:translateY(6px);white-space:nowrap}
+.intro-route__stop span{font:10px/1.2 'BT Steinhart Mono',monospace;letter-spacing:.06em}
+.intro-route__stop strong{font:16px/1.15 'BT Steinhart',sans-serif;letter-spacing:-.02em}
+.intro-route__stop--one{left:14%;top:0}
+.intro-route__stop--two{left:56%;top:30%}
+.intro-route__stop--three{left:27%;top:71%}
+.intro-route.is-active .intro-route__stop--one,.intro-route[data-step="2"] .intro-route__stop--two,.intro-route[data-step="3"] .intro-route__stop--two,.intro-route[data-step="3"] .intro-route__stop--three{opacity:1;transform:none}
+.intro-route.is-active .intro-route__node--one,.intro-route[data-step="2"] .intro-route__node--two,.intro-route[data-step="3"] .intro-route__node--two,.intro-route[data-step="3"] .intro-route__node--three{fill:#f45300;stroke:#f45300}
+.intro-route__foot{margin-top:4px;padding-top:12px;border-top:1px solid #d8d8d8;color:#777}
+.intro-route__foot span:last-child{font-size:18px;line-height:8px;color:#f45300}
+@media(max-width:991px){.intro-route__title{font-size:35px}.intro-route__stop strong{font-size:14px}}
+@media(max-width:767px){.intro-route{position:relative;top:auto;left:auto;max-width:none;margin:0 0 6rem}.intro-route__meta{font-size:9px}.intro-route__title{margin-top:22px;font-size:clamp(32px,8vw,42px)}.intro-route__map{height:250px;margin-top:8px}.intro-route__stop span{font-size:8px}.intro-route__stop strong{font-size:12px}.intro-route__foot{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.intro-route__node,.intro-route__marker,.intro-route__stop{transition:none}}
+
+/* The original About copy reads as two connected, animated editorial beats. */
+.intro-story{position:relative}
+.intro-story__rail{position:absolute;left:-26px;top:0;bottom:0;width:1px;background:#d8d8d8;pointer-events:none}
+.intro-story__rail::after{content:"";position:absolute;inset:0;background:#f45300;transform:scaleY(0);transform-origin:top;transition:transform 1.8s cubic-bezier(.18,.72,.2,1)}
+.intro-story:has(.intro-story__paragraph.in-view) .intro-story__rail::after{transform:scaleY(1)}
+.intro-story__paragraph{position:relative;padding-top:18px;border-top:1px solid #d8d8d8;margin:0!important}
+.intro-story__paragraph+.intro-story__paragraph{margin-top:26px!important}
+.intro-story__paragraph::before{content:"";position:absolute;left:-31px;top:-5px;width:9px;height:9px;border:1px solid #999;border-radius:50%;background:#fff;transition:background .45s,border-color .45s,box-shadow .45s}
+.intro-story__paragraph::after{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:#f45300;transform:scaleX(0);transform-origin:left;transition:transform 1.15s cubic-bezier(.18,.72,.2,1)}
+.intro-story__paragraph.reveal{opacity:0;transform:translate3d(24px,0,0);transition:opacity .85s ease,transform .85s cubic-bezier(.18,.72,.2,1)}
+.intro-story__paragraph+.intro-story__paragraph.reveal,.intro-story__paragraph+.intro-story__paragraph::after{transition-delay:.16s}
+.intro-story__paragraph.reveal.in-view{opacity:1;transform:none}
+.intro-story__paragraph.in-view::before{background:#f45300;border-color:#f45300;box-shadow:0 0 0 4px #fff}
+.intro-story__paragraph.in-view::after{transform:scaleX(1)}
+@media(max-width:767px){.intro-story{padding-left:18px}.intro-story__rail{left:0}.intro-story__paragraph::before{left:-23px}.intro-story__paragraph+.intro-story__paragraph{margin-top:30px!important}}
+@media(prefers-reduced-motion:reduce){.intro-story__paragraph.reveal{opacity:1;transform:none;transition:none}.intro-story__paragraph::after,.intro-story__rail::after{transform:none;transition:none}.intro-story__paragraph::before{background:#f45300;border-color:#f45300;transition:none}}
+
 .home-hero-stick{overflow:clip}
 .freight-journey{height:1600svh;position:relative;background:white}
 .freight-pin{position:sticky;top:0;height:100svh;overflow:clip;background:white}
